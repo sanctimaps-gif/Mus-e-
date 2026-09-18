@@ -3,8 +3,10 @@
  * Les images des tableaux restent dans IndexedDB, jamais ici.
  */
 
-const CACHE = 'musee-coquille-v1';
+const CACHE = 'musee-coquille-v2';
 
+// Seules les petites icônes sont préchargées : les 512 px pèsent lourd et ne
+// servent qu'à l'installation. Elles seront mises en cache à la première visite.
 const FICHIERS = [
   './',
   './index.html',
@@ -13,9 +15,8 @@ const FICHIERS = [
   './js/db.js',
   './js/camera.js',
   './manifest.webmanifest',
-  './icons/icone.svg',
   './icons/icone-192.png',
-  './icons/icone-512.png',
+  './icons/icone-apple-180.png',
 ];
 
 self.addEventListener('install', (evenement) => {

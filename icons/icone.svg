@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tableau encadré">
-  <rect width="512" height="512" fill="#8a5a2b"/>
-  <rect x="96" y="76" width="320" height="360" fill="#f6f3ee"/>
-  <rect x="122" y="102" width="268" height="308" fill="#1c1a17"/>
-  <circle cx="200" cy="180" r="46" fill="#f6f3ee"/>
-  <path d="M122 410 Q256 300 390 410 Z" fill="#f6f3ee"/>
-</svg>
