@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ma collection de tableaux</title>
+  <meta name="description" content="Rangez vos photos de tableaux avec leur nom, le musée, la salle et une description.">
+  <meta name="theme-color" content="#1c1a17">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icone-192.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="entete">
+    <div class="entete__titre">
+      <h1>Ma collection</h1>
+      <p id="compteur" class="entete__compteur">Chargement…</p>
+    </div>
+    <div class="entete__actions">
+      <button type="button" id="btn-menu" class="bouton bouton--discret" aria-expanded="false" aria-controls="menu">
+        <span aria-hidden="true">⋯</span><span class="sr-only">Autres actions</span>
+      </button>
+      <button type="button" id="btn-ajouter" class="bouton bouton--primaire">
+        <span aria-hidden="true">＋</span> Ajouter<span class="bouton__long">&nbsp;un tableau</span>
+      </button>
+    </div>
+  </header>
+
+  <div id="menu" class="menu" hidden>
+    <button type="button" id="btn-exporter" class="menu__item">Exporter ma collection (.json)</button>
+    <button type="button" id="btn-importer" class="menu__item">Importer une sauvegarde…</button>
+    <input type="file" id="fichier-import" accept="application/json,.json" hidden>
+  </div>
+
+  <main class="contenu">
+    <section class="filtres" aria-label="Recherche et filtres">
+      <label class="champ champ--recherche">
+        <span class="sr-only">Rechercher</span>
+        <input type="search" id="recherche" placeholder="Rechercher un tableau, un musée, une salle…" autocomplete="off">
+      </label>
+      <label class="champ champ--filtre">
+        <span class="sr-only">Filtrer par musée</span>
+        <select id="filtre-musee">
+          <option value="">Tous les musées</option>
+        </select>
+      </label>
+    </section>
+
+    <p id="vide" class="etat-vide" hidden>
+      <strong>Votre collection est vide.</strong>
+      Appuyez sur « Ajouter un tableau » pour photographier votre première œuvre.
+    </p>
+
+    <p id="aucun-resultat" class="etat-vide" hidden>Aucun tableau ne correspond à cette recherche.</p>
+
+    <ul id="galerie" class="galerie"></ul>
+  </main>
+
+  <!-- ============ Fiche : création / modification ============ -->
+  <dialog id="dialogue-fiche" class="dialogue" aria-labelledby="titre-fiche">
+    <form id="formulaire" class="fiche" novalidate>
+      <div class="dialogue__entete">
+        <h2 id="titre-fiche">Nouveau tableau</h2>
+        <button type="button" class="bouton bouton--discret" data-fermer-fiche>
+          <span aria-hidden="true">✕</span><span class="sr-only">Fermer</span>
+        </button>
+      </div>
+
+      <div class="dialogue__corps">
+        <div class="photo-zone">
+          <img id="apercu-photo" class="photo-zone__image" alt="" hidden>
+          <p id="photo-absente" class="photo-zone__vide">Aucune photo pour l'instant</p>
+
+          <div class="photo-zone__actions">
+            <button type="button" id="btn-camera" class="bouton bouton--primaire">
+              <span aria-hidden="true">📷</span> Prendre une photo
+            </button>
+            <button type="button" id="btn-galerie" class="bouton">Choisir un fichier</button>
+            <button type="button" id="btn-retirer-photo" class="bouton bouton--danger-doux" hidden>Retirer</button>
+            <input type="file" id="fichier-photo" accept="image/*" hidden>
+          </div>
+        </div>
+
+        <label class="champ">
+          <span class="champ__libelle">Nom du tableau <em>*</em></span>
+          <input type="text" id="champ-nom" name="nom" required maxlength="200" autocomplete="off"
+                 placeholder="La Joconde">
+        </label>
+
+        <label class="champ">
+          <span class="champ__libelle">Musée</span>
+          <input type="text" id="champ-musee" name="musee" maxlength="200" autocomplete="off"
+                 list="liste-musees" placeholder="Musée du Louvre">
+          <datalist id="liste-musees"></datalist>
+        </label>
+
+        <label class="champ">
+          <span class="champ__libelle">Salle</span>
+          <input type="text" id="champ-salle" name="salle" maxlength="200" autocomplete="off"
+                 list="liste-salles" placeholder="Salle 711, aile Denon">
+          <datalist id="liste-salles"></datalist>
+        </label>
+
+        <label class="champ">
+          <span class="champ__libelle">Description</span>
+          <textarea id="champ-description" name="description" rows="4" maxlength="5000"
+                    placeholder="Auteur, date, technique, ce que vous en avez pensé…"></textarea>
+        </label>
+
+        <p id="erreur-fiche" class="erreur" role="alert" hidden></p>
+      </div>
+
+      <div class="dialogue__pied">
+        <button type="button" id="btn-supprimer" class="bouton bouton--danger" hidden>Supprimer</button>
+        <span class="espaceur"></span>
+        <button type="button" class="bouton" data-fermer-fiche>Annuler</button>
+        <button type="submit" class="bouton bouton--primaire">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ============ Appareil photo ============ -->
+  <dialog id="dialogue-camera" class="dialogue dialogue--camera" aria-label="Appareil photo">
+    <div class="camera">
+      <div class="camera__scene">
+        <video id="apercu-camera" class="camera__video" playsinline muted autoplay></video>
+        <p id="erreur-camera" class="camera__erreur" role="alert" hidden></p>
+      </div>
+      <div class="camera__barre">
+        <button type="button" id="btn-fermer-camera" class="bouton bouton--sur-noir">Annuler</button>
+        <button type="button" id="btn-declencher" class="declencheur">
+          <span class="sr-only">Prendre la photo</span>
+        </button>
+        <button type="button" id="btn-changer-camera" class="bouton bouton--sur-noir" hidden>
+          <span aria-hidden="true">🔄</span><span class="sr-only">Changer de caméra</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============ Détail d'une œuvre ============ -->
+  <dialog id="dialogue-detail" class="dialogue" aria-labelledby="detail-nom">
+    <div class="dialogue__entete">
+      <h2 id="detail-nom"></h2>
+      <button type="button" class="bouton bouton--discret" data-fermer-detail>
+        <span aria-hidden="true">✕</span><span class="sr-only">Fermer</span>
+      </button>
+    </div>
+    <div class="dialogue__corps">
+      <img id="detail-photo" class="detail__image" alt="" hidden>
+      <dl class="detail__infos">
+        <div><dt>Musée</dt><dd id="detail-musee"></dd></div>
+        <div><dt>Salle</dt><dd id="detail-salle"></dd></div>
+        <div><dt>Ajouté le</dt><dd id="detail-date"></dd></div>
+      </dl>
+      <p id="detail-description" class="detail__description"></p>
+    </div>
+    <div class="dialogue__pied">
+      <span class="espaceur"></span>
+      <button type="button" class="bouton" data-fermer-detail>Fermer</button>
+      <button type="button" id="btn-modifier" class="bouton bouton--primaire">Modifier</button>
+    </div>
+  </dialog>
+
+  <p id="annonce" class="annonce" role="status" aria-live="polite" hidden></p>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
